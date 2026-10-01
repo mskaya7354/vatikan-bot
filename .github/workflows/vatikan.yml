@@ -1,0 +1,28 @@
+name: Vatikan bilet botu
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Test modu (Palazzo Papale ile telefona bildirim dener)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: vatikan-${{ inputs.test == true && 'test' || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bilet kontrol
+        run: python3 check.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TEST: ${{ inputs.test == true && 'true' || 'false' }}
+          RUN_MINUTES: "340"
